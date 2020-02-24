@@ -10,17 +10,23 @@ X=1
 
 #VARIABLES
 letter=$((RANDOM%2))
+toss=$((RANDOM%2))
 
+#DECLARING 2D ARRAY
+declare -A board
+
+#FUNCTION TO RESET BOARD WITH EMPTY VALUES
 function resetBoard(){
 	for (( row=0; row<$NO_OF_ROWS; row++ ))
 	do
 		for (( column=0; column<$NO_OF_COLUMNS; column++ ))
 		do
-			board[$row,$column]=""
+			board[$row,$column]=" "
 		done
 	done
 }
 
+#FUNCTION TO ASSIGN LETTERS TO PLAYER AND COMPUTER
 function assignLetter(){
 	if [ $letter -eq $X ]
 	then
@@ -34,5 +40,32 @@ function assignLetter(){
 	echo "Computer : $computer"
 }
 
+#FUNCTION TO SIMULATE TOSS TO DETERMINE WHO PLAYS FIRST
+function toss(){
+	if [ $toss -eq $X ]
+	then
+		echo "Player Won Toss"
+	else
+		echo "Computer Won Toss"
+	fi
+}
+
+#FUNCTION TO DISPLAY BOARD
+function displayBoard(){
+	for (( row=0; row<$NO_OF_ROWS; row++ ))
+	do
+		printf " --- --- --- \n"
+		printf "| "
+		for (( column=0; column<$NO_OF_COLUMNS; column++ ))
+		do
+			printf "${board[$row,$column]} | "
+		done
+		printf "\n"
+	done
+	printf " --- --- --- \n"
+}
+
 resetBoard
 assignLetter
+toss
+displayBoard
