@@ -65,7 +65,62 @@ function displayBoard(){
 	printf " --- --- --- \n"
 }
 
+#FUNCTION TO CHECK IF THE PLAYER HAS WON
+function checkWin(){
+	local playerLetter=$1
+	local row=0
+	local column=0
+	local flag=false
+
+	while [ $column -lt $NO_OF_COLUMNS ]
+	do
+		if [[ ${board[$row,$column]}${board[$(($row+1)),$column]}${board[$(($row+2)),$column]} == $playerLetter$playerLetter$playerLetter ]]
+		then
+			flag=true
+			echo $flag
+			return
+		fi
+	((column++))
+	done
+
+	row=0
+	column=0
+
+	while [ $row -lt $NO_OF_COLUMNS ]
+	do
+		if [[ ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} == $playerLetter$playerLetter$playerLetter ]]
+		then
+			flag=true
+			echo $flag
+			return
+		fi
+	((row++))
+	done
+
+	row=0
+	column=0
+
+	if [[ ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} == $playerLetter$playerLetter$playerLetter ]]
+	then
+		flag=true
+		echo $flag
+		return
+	fi
+
+	row=0
+	column=$(($column+2))
+
+	if [[ ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} == $playerLetter$playerLetter$playerLetter ]]
+	then
+		flag=true
+		echo $flag
+		return
+	fi
+	echo $flag
+}
+
 resetBoard
 assignLetter
 toss
 displayBoard
+checkWin $player
