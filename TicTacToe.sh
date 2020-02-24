@@ -10,7 +10,9 @@ X=1
 
 #VARIABLES
 letter=$((RANDOM%2))
+toss=$((RANDOM%2))
 
+#FUNCTION TO RESET BOARD WITH EMPTY VALUES
 function resetBoard(){
 	for (( row=0; row<$NO_OF_ROWS; row++ ))
 	do
@@ -21,6 +23,7 @@ function resetBoard(){
 	done
 }
 
+#FUNCTION TO ASSIGN LETTERS TO PLAYER AND COMPUTER
 function assignLetter(){
 	if [ $letter -eq $X ]
 	then
@@ -34,5 +37,16 @@ function assignLetter(){
 	echo "Computer : $computer"
 }
 
+#FUNCTION TO SIMULATE TOSS TO DETERMINE WHO PLAYS FIRST
+function toss(){
+	if [ $toss -eq $X ]
+	then
+		echo "Player Won Toss"
+	else
+		echo "Computer Won Toss"
+	fi
+}
+
 resetBoard
 assignLetter
+toss
