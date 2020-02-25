@@ -7,10 +7,12 @@ NO_OF_ROWS=3
 NO_OF_COLUMNS=3
 O=0
 X=1
+TOTALCOUNT=9
 
 #VARIABLES
 letter=$((RANDOM%2))
 toss=$((RANDOM%2))
+playCount=0
 
 #DECLARING 2D ARRAY
 declare -A board
@@ -44,9 +46,9 @@ function assignLetter(){
 function toss(){
 	if [ $toss -eq $X ]
 	then
-		echo "Player Won Toss"
+		echo $player
 	else
-		echo "Computer Won Toss"
+		echo $computer
 	fi
 }
 
@@ -119,8 +121,85 @@ function checkWin(){
 	echo $flag
 }
 
+#FUNCTION TO CHECK IF SELECTED BLOCK IS EMPTY
+function isEmpty(){
+	local row=$1
+	local column=$2
+	if [[ ${board[$row,$column]} == " " ]]
+	then
+		echo true
+		return
+	else
+		echo false
+		return
+	fi
+}
+
+#FUNCTION TO SIMULATE PLAYER TURN
+function playerTurn(){
+	if [ $playCount -eq $TOTALCOUNT ]
+	then
+		echo "Match Tie"
+		exit
+	fi
+
+	read -p "Enter block number 0-8 : " block
+	row=$(($block/3))
+	column=$(($block%3))
+	while [[ $(isEmpty $row $column) == false ]]
+	do
+		echo "Block $block is already occupied."
+		read -p "Enter block number 0-8 : " block
+		row=$(($block/3))
+		column=$(($block%3))
+	done
+	board[$row,$column]=$player
+	((playCount++))
+	displayBoard
+	if [[ $(checkWin $player) == true ]]
+	then
+		echo "You won!"
+		exit
+	fi
+	computerTurn
+}
+
+#FUNCTION TO SIMULATE COMPUTER TURN
+function computerTurn(){
+	if [ $playCount -eq $TOTALCOUNT ]
+	then
+		echo "Match Tie"
+		exit
+	fi
+
+	local row=$((RANDOM%3))
+	local column=$((RANDOM%3))
+	while [[ $(isEmpty $row $column) == false ]]
+	do
+		row=$((RANDOM%3))
+		column=$((RANDOM%3))
+	done
+	board[$row,$column]=$computer
+	((playCount++))
+	displayBoard
+	if [[ $(checkWin $computer) == true ]]
+	then
+		echo "Computer won!"
+		exit
+	fi
+	playerTurn
+}
+
 resetBoard
 assignLetter
-toss
-displayBoard
-checkWin $player
+
+#CALLING THE TOSS WINNER PLAYER'S TURN FUNCTION
+if [[ $(toss) == $player ]]
+then
+	printf "You won toss\n"
+	displayBoard
+	playerTurn
+else
+	printf "Computer won toss\n"
+	computerTurn
+fi
