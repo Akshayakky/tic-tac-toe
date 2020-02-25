@@ -67,19 +67,17 @@ function displayBoard(){
 	printf " --- --- --- \n"
 }
 
-#FUNCTION TO CHECK IF THE PLAYER HAS WON
+#FUNCTION TO CHECK IF THE PLAYER OR COMPUTER HAS WON
 function checkWin(){
 	local playerLetter=$1
 	local row=0
 	local column=0
-	local flag=false
 
 	while [ $column -lt $NO_OF_COLUMNS ]
 	do
 		if [[ ${board[$row,$column]}${board[$(($row+1)),$column]}${board[$(($row+2)),$column]} == $playerLetter$playerLetter$playerLetter ]]
 		then
-			flag=true
-			echo $flag
+			echo true
 			return
 		fi
 	((column++))
@@ -92,8 +90,7 @@ function checkWin(){
 	do
 		if [[ ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} == $playerLetter$playerLetter$playerLetter ]]
 		then
-			flag=true
-			echo $flag
+			echo true
 			return
 		fi
 	((row++))
@@ -104,8 +101,7 @@ function checkWin(){
 
 	if [[ ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} == $playerLetter$playerLetter$playerLetter ]]
 	then
-		flag=true
-		echo $flag
+		echo true
 		return
 	fi
 
@@ -114,11 +110,10 @@ function checkWin(){
 
 	if [[ ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} == $playerLetter$playerLetter$playerLetter ]]
 	then
-		flag=true
-		echo $flag
+		echo true
 		return
 	fi
-	echo $flag
+	echo false
 }
 
 #FUNCTION TO CHECK IF SELECTED BLOCK IS EMPTY
@@ -166,20 +161,26 @@ function playerTurn(){
 
 #FUNCTION TO SIMULATE COMPUTER TURN
 function computerTurn(){
+	turnPlayed=0
 	if [ $playCount -eq $TOTALCOUNT ]
 	then
 		echo "Match Tie"
 		exit
 	fi
+	#TO CHECK IF WINNING POSSIBLE AND PLAY WINNING MOVE
+	checkIfWinPossibleAndBlockCompetitorFromWinning $computer
 
-	local row=$((RANDOM%3))
-	local column=$((RANDOM%3))
-	while [[ $(isEmpty $row $column) == false ]]
-	do
-		row=$((RANDOM%3))
-		column=$((RANDOM%3))
-	done
-	board[$row,$column]=$computer
+	if [[ $turnPlayed == 0 ]]
+	then
+		local row=$((RANDOM%3))
+		local column=$((RANDOM%3))
+		while [[ $(isEmpty $row $column) == false ]]
+		do
+			row=$((RANDOM%3))
+			column=$((RANDOM%3))
+		done
+		board[$row,$column]=$computer
+	fi
 	((playCount++))
 	displayBoard
 	if [[ $(checkWin $computer) == true ]]
@@ -190,10 +191,82 @@ function computerTurn(){
 	playerTurn
 }
 
+#FUNCTION TO CHECK IF WIN POSSIBLE FOR COMPUTER AND PLAY WINNING MOVE
+function checkIfWinPossibleAndBlockCompetitorFromWinning(){
+	winningLetter=$1
+	local row=0
+	local column=0
+	possibleWins=(" "$winningLetter$winningLetter $winningLetter" "$winningLetter $winningLetter$winningLetter" ")
+
+	#CHECKING FOR VERTICAL WIN
+	while [ $column -lt $NO_OF_COLUMNS ]
+	do
+		for (( position=0; position<3; position++ ))
+		do
+			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$column]}${board[$(($row+2)),$column]} ]]
+			then
+				board[$(($row+$position)),$column]=$computer
+				turnPlayed=1
+				return
+			fi
+		done
+	((column++))
+	done
+
+	row=0
+	column=0
+	
+	#CHECKING FOR HORIZONTAL WIN
+	while [ $row -lt $NO_OF_COLUMNS ]
+	do
+		for (( position=0; position<3; position++ ))
+		do
+			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} ]]
+			then
+				echo horizontal true
+				board[$row,$(($column+$position))]=$computer
+				turnPlayed=1
+				return
+			fi
+		done
+	((row++))
+	done
+
+	row=0
+	column=0
+
+	#CHECKING FOR DIAGONAL 1 WIN
+	for (( position=0; position<3; position++ ))
+	do
+		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} ]]
+		then
+			echo diagonal 1true
+			board[$(($row+$position)),$(($column+$position))]=$computer
+			turnPlayed=1
+			return
+		fi
+	done
+
+	row=0
+	column=$(($column+2))
+
+	#CHECKING FOR DIAGONAL 2 WIN
+	for (( position=0; position<3; position++ ))
+	do
+		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} ]]
+		then
+			echo diagonally true
+			board[$(($row+$position)),$(($column-$position))]=$computer
+			turnPlayed=1
+			return
+		fi
+	done
+}
+
 resetBoard
 assignLetter
 
-#CALLING THE TOSS WINNER PLAYER'S TURN FUNCTION
+#THE TOSS WINNING PLAYER PLAYS FIRST MOVE
 if [[ $(toss) == $player ]]
 then
 	printf "You won toss\n"
