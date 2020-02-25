@@ -73,6 +73,7 @@ function checkWin(){
 	local row=0
 	local column=0
 
+	#CHECKING IF WON VERTICALLY
 	while [ $column -lt $NO_OF_COLUMNS ]
 	do
 		if [[ ${board[$row,$column]}${board[$(($row+1)),$column]}${board[$(($row+2)),$column]} == $playerLetter$playerLetter$playerLetter ]]
@@ -86,6 +87,7 @@ function checkWin(){
 	row=0
 	column=0
 
+	#CHECKING IF WON HORIZONTALLY
 	while [ $row -lt $NO_OF_COLUMNS ]
 	do
 		if [[ ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} == $playerLetter$playerLetter$playerLetter ]]
@@ -99,6 +101,7 @@ function checkWin(){
 	row=0
 	column=0
 
+	#CHECKING IF WON DIAGONALLY
 	if [[ ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} == $playerLetter$playerLetter$playerLetter ]]
 	then
 		echo true
@@ -108,6 +111,7 @@ function checkWin(){
 	row=0
 	column=$(($column+2))
 
+	#CHECKING IF WON DIAGONALLY
 	if [[ ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} == $playerLetter$playerLetter$playerLetter ]]
 	then
 		echo true
@@ -139,6 +143,13 @@ function playerTurn(){
 	fi
 
 	read -p "Enter block number 0-8 : " block
+
+	while [[ $block -eq "" || $block -lt 0 || $block -gt 8 ]]
+	do
+		printf  "Invalid Block Number\n"
+		read -p "Enter block number 0-8 : " block
+	done
+
 	row=$(($block/3))
 	column=$(($block%3))
 	while [[ $(isEmpty $row $column) == false ]]
@@ -170,6 +181,9 @@ function computerTurn(){
 	#TO CHECK IF WINNING POSSIBLE AND PLAY WINNING MOVE
 	checkIfWinPossibleAndBlockCompetitorFromWinning $computer
 
+	#TO CHECK IF OPPONENT CAN WIN AND BLOCK FROM WINNING
+	checkIfWinPossibleAndBlockCompetitorFromWinning $player
+
 	if [[ $turnPlayed == 0 ]]
 	then
 		local row=$((RANDOM%3))
@@ -191,7 +205,7 @@ function computerTurn(){
 	playerTurn
 }
 
-#FUNCTION TO CHECK IF WIN POSSIBLE FOR COMPUTER AND PLAY WINNING MOVE
+#FUNCTION TO CHECK IF WIN POSSIBLE FOR COMPUTER AND PLAY WINNING MOVE AND ALSO BLOCK OPPONENT FROM WINNING
 function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 	winningLetter=$1
 	local row=0
@@ -215,7 +229,7 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 
 	row=0
 	column=0
-	
+
 	#CHECKING FOR HORIZONTAL WIN
 	while [ $row -lt $NO_OF_COLUMNS ]
 	do
