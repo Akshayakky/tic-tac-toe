@@ -143,11 +143,11 @@ function takeAvailableCorner(){
 	counter=0
 	for (( corner=0; corner<${#allCorners[@]}; corner++ ))
 	do
-		if [[ $(isEmpty ${allCorners[corner]}) == true ]]
+		if [[ $(isEmpty ${allCorners[$corner]}) == true ]]
 		then
 			flag=true
 			#STORING ALL AVAILABLE CORNERS IN ARRAY availableCorners
-			availableCorners[((counter++))]=${allCorners[corner]}
+			availableCorners[((counter++))]=${allCorners[$corner]}
 		fi
 	done
 
@@ -228,16 +228,19 @@ function computerTurn(){
 		checkIfWinPossibleAndBlockCompetitorFromWinning $player
 	fi
 
+	#TAKE CORNER IF WINNING AND BLOCKING NOT POSSIBLE
 	if [[ $turnPlayed == 0 ]]
 	then
 		takeAvailableCorner
 	fi
 
+	#TAKE CENTER IF CORNER NOT AVAILABLE
 	if [[ $turnPlayed == 0 ]]
 	then
 		takeCenter
 	fi
 
+	#FINALLY TAKE ANY SIDE IF CENTER NOT AVAILABLE
 	if [[ $turnPlayed -eq 0 ]]
 	then
 		local blockNumber=$((RANDOM%9))
@@ -249,6 +252,7 @@ function computerTurn(){
 		column=$(($(($blockNumber-1))%3))
 		board[$row,$column]=$computer
 	fi
+
 	((playCount++))
 	displayBoard
 	if [[ $(checkWin $computer) == true ]]
