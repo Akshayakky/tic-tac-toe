@@ -40,7 +40,7 @@ function assignLetter(){
 	fi
 	echo "Player : $player"
 	echo "Computer : $computer"
-}
+	}
 
 #FUNCTION TO SIMULATE TOSS TO DETERMINE WHO PLAYS FIRST
 function toss(){
@@ -122,8 +122,9 @@ function checkWin(){
 
 #FUNCTION TO CHECK IF SELECTED BLOCK IS EMPTY
 function isEmpty(){
-	local row=$1
-	local column=$2
+	local blockNumber=$1
+	local row=$(($(($blockNumber-1))/3))
+	local column=$(($(($blockNumber-1))%3))
 	if [[ ${board[$row,$column]} == " " ]]
 	then
 		echo true
@@ -142,23 +143,17 @@ function playerTurn(){
 		exit
 	fi
 
-	read -p "Enter block number 0-8 : " block
+	read -p "Enter block number 1-9 : " block
 
-	while [[ $block -eq "" || $block -lt 0 || $block -gt 8 ]]
+	while [[ $(isEmpty $block) == false ]]
 	do
-		printf  "Invalid Block Number\n"
-		read -p "Enter block number 0-8 : " block
+		printf "Block Already Occupied Or Invalid Input\n"
+		read -p "Enter block number 1-9 : " block
 	done
 
-	row=$(($block/3))
-	column=$(($block%3))
-	while [[ $(isEmpty $row $column) == false ]]
-	do
-		echo "Block $block is already occupied."
-		read -p "Enter block number 0-8 : " block
-		row=$(($block/3))
-		column=$(($block%3))
-	done
+	row=$(($(($block-1))/3))
+	column=$(($(($block-1))%3))
+
 	board[$row,$column]=$player
 	((playCount++))
 	displayBoard
@@ -172,8 +167,9 @@ function playerTurn(){
 
 #FUNCTION TO SIMULATE COMPUTER TURN
 function computerTurn(){
+	#USING TURNPLAYED VARIABLE TO RESTRICT COMPUTER FROM PLAYING ITS TURN MULTIPLE TIMES
 	turnPlayed=0
-	if [ $playCount -eq $TOTALCOUNT ]
+	if [ $playCount -ge $TOTALCOUNT ]
 	then
 		echo "Match Tie"
 		exit
@@ -182,17 +178,20 @@ function computerTurn(){
 	checkIfWinPossibleAndBlockCompetitorFromWinning $computer
 
 	#TO CHECK IF OPPONENT CAN WIN AND BLOCK FROM WINNING
-	checkIfWinPossibleAndBlockCompetitorFromWinning $player
-
 	if [[ $turnPlayed == 0 ]]
 	then
-		local row=$((RANDOM%3))
-		local column=$((RANDOM%3))
-		while [[ $(isEmpty $row $column) == false ]]
+		checkIfWinPossibleAndBlockCompetitorFromWinning $player
+	fi
+
+	if [[ $turnPlayed -eq 0 ]]
+	then
+		local blockNumber=$((RANDOM%9))
+		while [[ $(isEmpty $blockNumber) == false ]]
 		do
-			row=$((RANDOM%3))
-			column=$((RANDOM%3))
+			blockNumber=$((RANDOM%9))
 		done
+		row=$(($(($blockNumber-1))/3))
+		column=$(($(($blockNumber-1))%3))
 		board[$row,$column]=$computer
 	fi
 	((playCount++))
@@ -237,7 +236,6 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 		do
 			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} ]]
 			then
-				echo horizontal true
 				board[$row,$(($column+$position))]=$computer
 				turnPlayed=1
 				return
@@ -254,7 +252,6 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 	do
 		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} ]]
 		then
-			echo diagonal 1true
 			board[$(($row+$position)),$(($column+$position))]=$computer
 			turnPlayed=1
 			return
@@ -269,7 +266,6 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 	do
 		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} ]]
 		then
-			echo diagonally true
 			board[$(($row+$position)),$(($column-$position))]=$computer
 			turnPlayed=1
 			return
