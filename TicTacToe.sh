@@ -170,10 +170,14 @@ function takeAvailableCorner(){
 
 #TAKE CENTER IF CORNERS NOT AVAILABLE
 function takeCenter(){
-	local row=$(($NO_OF_ROWS/2))
-	local column=$(($NO_OF_COLUMNS/2))
-	board[$row,$column]=$computer
-	turnPlayed=1
+	local centerBlock=$(($NO_OF_ROWS*$NO_OF_COLUMNS/2+1))
+	if [[ $(isEmpty $centerBlock) == true ]]
+	then
+		local row=$(($(($centerBlock-1))/3))
+		local column=$(($(($centerBlock-1))%3))
+		board[$row,$column]=$computer
+		turnPlayed=1
+	fi
 }
 
 #FUNCTION TO SIMULATE PLAYER TURN
