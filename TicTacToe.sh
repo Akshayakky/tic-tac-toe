@@ -135,6 +135,39 @@ function isEmpty(){
 	fi
 }
 
+#TAKE AVAILABLE CORNER IF WINNING NOT POSSIBLE
+function takeAvailableCorner(){
+	#STORING ALL POSSIBLE CORNERS IN ARRAY allCorners
+	allCorners=(1 $(($NO_OF_ROWS)) $(($NO_OF_ROWS*$NO_OF_COLUMNS-$NO_OF_ROWS+1)) $(($NO_OF_ROWS*$NO_OF_COLUMNS)))
+	flag=false
+	counter=0
+	for (( corner=0; corner<${#allCorners[@]}; corner++ ))
+	do
+		if [[ $(isEmpty ${allCorners[corner]}) == true ]]
+		then
+			flag=true
+			#STORING ALL AVAILABLE CORNERS IN ARRAY availableCorners
+			availableCorners[((counter++))]=${allCorners[corner]}
+		fi
+	done
+
+	#TAKE ANY ONE AVAILABLE CORNER RANDOMLY
+	if [[ $flag == true ]]
+	then
+		cornerNumber=$((RANDOM%${#availableCorners[@]}))
+		while [[ $(isEmpty ${availableCorners[$cornerNumber]}) == false ]]
+		do
+			cornerNumber=$((RANDOM%${#availableCorners[@]}))
+		done
+
+		local row=$(($((${availableCorners[$cornerNumber]}-1))/3))
+		local column=$(($((${availableCorners[$cornerNumber]}-1))%3))
+		board[$row,$column]=$computer
+		turnPlayed=1
+		return
+	fi
+}
+
 #FUNCTION TO SIMULATE PLAYER TURN
 function playerTurn(){
 	if [ $playCount -eq $TOTALCOUNT ]
@@ -181,6 +214,11 @@ function computerTurn(){
 	if [[ $turnPlayed == 0 ]]
 	then
 		checkIfWinPossibleAndBlockCompetitorFromWinning $player
+	fi
+
+	if [[ $turnPlayed == 0 ]]
+	then
+		takeAvailableCorner
 	fi
 
 	if [[ $turnPlayed -eq 0 ]]
