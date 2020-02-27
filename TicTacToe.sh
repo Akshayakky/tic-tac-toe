@@ -135,6 +135,75 @@ function isEmpty(){
 	fi
 }
 
+#FUNCTION TO CHECK IF WIN POSSIBLE FOR COMPUTER AND PLAY WINNING MOVE AND ALSO BLOCK OPPONENT FROM WINNING
+function checkIfWinPossibleAndBlockCompetitorFromWinning(){
+	winningLetter=$1
+	local row=0
+	local column=0
+	possibleWins=(" "$winningLetter$winningLetter $winningLetter" "$winningLetter $winningLetter$winningLetter" ")
+
+	#CHECKING FOR VERTICAL WIN
+	while [ $column -lt $NO_OF_COLUMNS ]
+	do
+		for (( position=0; position<3; position++ ))
+		do
+			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$column]}${board[$(($row+2)),$column]} ]]
+			then
+				board[$(($row+$position)),$column]=$computer
+				turnPlayed=1
+				return
+			fi
+		done
+	((column++))
+	done
+
+	row=0
+	column=0
+
+	#CHECKING FOR HORIZONTAL WIN
+	while [ $row -lt $NO_OF_COLUMNS ]
+	do
+		for (( position=0; position<3; position++ ))
+		do
+			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} ]]
+			then
+				board[$row,$(($column+$position))]=$computer
+				turnPlayed=1
+				return
+			fi
+		done
+	((row++))
+	done
+
+	row=0
+	column=0
+
+	#CHECKING FOR DIAGONAL 1 WIN
+	for (( position=0; position<3; position++ ))
+	do
+		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} ]]
+		then
+			board[$(($row+$position)),$(($column+$position))]=$computer
+			turnPlayed=1
+			return
+		fi
+	done
+
+	row=0
+	column=$(($column+2))
+
+	#CHECKING FOR DIAGONAL 2 WIN
+	for (( position=0; position<3; position++ ))
+	do
+		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} ]]
+		then
+			board[$(($row+$position)),$(($column-$position))]=$computer
+			turnPlayed=1
+			return
+		fi
+	done
+}
+
 #TAKE AVAILABLE CORNER IF WINNING NOT POSSIBLE
 function takeAvailableCorner(){
 	#STORING ALL POSSIBLE CORNERS IN ARRAY allCorners
@@ -228,16 +297,16 @@ function computerTurn(){
 		checkIfWinPossibleAndBlockCompetitorFromWinning $player
 	fi
 
-	#TAKE CORNER IF WINNING AND BLOCKING NOT POSSIBLE
-	if [[ $turnPlayed == 0 ]]
-	then
-		takeAvailableCorner
-	fi
-
 	#TAKE CENTER IF CORNER NOT AVAILABLE
 	if [[ $turnPlayed == 0 ]]
 	then
 		takeCenter
+	fi
+
+	#TAKE CORNER IF WINNING AND BLOCKING NOT POSSIBLE
+	if [[ $turnPlayed == 0 ]]
+	then
+		takeAvailableCorner
 	fi
 
 	#FINALLY TAKE ANY SIDE IF CENTER NOT AVAILABLE
@@ -261,75 +330,6 @@ function computerTurn(){
 		exit
 	fi
 	playerTurn
-}
-
-#FUNCTION TO CHECK IF WIN POSSIBLE FOR COMPUTER AND PLAY WINNING MOVE AND ALSO BLOCK OPPONENT FROM WINNING
-function checkIfWinPossibleAndBlockCompetitorFromWinning(){
-	winningLetter=$1
-	local row=0
-	local column=0
-	possibleWins=(" "$winningLetter$winningLetter $winningLetter" "$winningLetter $winningLetter$winningLetter" ")
-
-	#CHECKING FOR VERTICAL WIN
-	while [ $column -lt $NO_OF_COLUMNS ]
-	do
-		for (( position=0; position<3; position++ ))
-		do
-			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$column]}${board[$(($row+2)),$column]} ]]
-			then
-				board[$(($row+$position)),$column]=$computer
-				turnPlayed=1
-				return
-			fi
-		done
-	((column++))
-	done
-
-	row=0
-	column=0
-
-	#CHECKING FOR HORIZONTAL WIN
-	while [ $row -lt $NO_OF_COLUMNS ]
-	do
-		for (( position=0; position<3; position++ ))
-		do
-			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} ]]
-			then
-				board[$row,$(($column+$position))]=$computer
-				turnPlayed=1
-				return
-			fi
-		done
-	((row++))
-	done
-
-	row=0
-	column=0
-
-	#CHECKING FOR DIAGONAL 1 WIN
-	for (( position=0; position<3; position++ ))
-	do
-		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} ]]
-		then
-			board[$(($row+$position)),$(($column+$position))]=$computer
-			turnPlayed=1
-			return
-		fi
-	done
-
-	row=0
-	column=$(($column+2))
-
-	#CHECKING FOR DIAGONAL 2 WIN
-	for (( position=0; position<3; position++ ))
-	do
-		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} ]]
-		then
-			board[$(($row+$position)),$(($column-$position))]=$computer
-			turnPlayed=1
-			return
-		fi
-	done
 }
 
 resetBoard
