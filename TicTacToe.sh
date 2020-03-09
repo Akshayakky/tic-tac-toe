@@ -136,7 +136,7 @@ function isEmpty(){
 }
 
 #FUNCTION TO CHECK IF WIN POSSIBLE FOR COMPUTER AND PLAY WINNING MOVE AND ALSO BLOCK OPPONENT FROM WINNING
-function checkIfWinPossibleAndBlockCompetitorFromWinning(){
+function winOrBlock(){
 	winningLetter=$1
 	local row=0
 	local column=0
@@ -150,7 +150,7 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$column]}${board[$(($row+2)),$column]} ]]
 			then
 				board[$(($row+$position)),$column]=$computer
-				turnPlayed=1
+				turnPlay=1
 				return
 			fi
 		done
@@ -168,7 +168,7 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 			if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$row,$(($column+1))]}${board[$row,$(($column+2))]} ]]
 			then
 				board[$row,$(($column+$position))]=$computer
-				turnPlayed=1
+				turnPlay=1
 				return
 			fi
 		done
@@ -184,7 +184,7 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column+1))]}${board[$(($row+2)),$(($column+2))]} ]]
 		then
 			board[$(($row+$position)),$(($column+$position))]=$computer
-			turnPlayed=1
+			turnPlay=1
 			return
 		fi
 	done
@@ -198,7 +198,7 @@ function checkIfWinPossibleAndBlockCompetitorFromWinning(){
 		if [[ ${possibleWins[$position]} == ${board[$row,$column]}${board[$(($row+1)),$(($column-1))]}${board[$(($row+2)),$(($column-2))]} ]]
 		then
 			board[$(($row+$position)),$(($column-$position))]=$computer
-			turnPlayed=1
+			turnPlay=1
 			return
 		fi
 	done
@@ -232,7 +232,7 @@ function takeAvailableCorner(){
 		local row=$(($((${availableCorners[$cornerNumber]}-1))/3))
 		local column=$(($((${availableCorners[$cornerNumber]}-1))%3))
 		board[$row,$column]=$computer
-		turnPlayed=1
+		turnPlay=1
 		return
 	fi
 }
@@ -245,7 +245,7 @@ function takeCenter(){
 		local row=$(($(($centerBlock-1))/3))
 		local column=$(($(($centerBlock-1))%3))
 		board[$row,$column]=$computer
-		turnPlayed=1
+		turnPlay=1
 	fi
 }
 
@@ -281,36 +281,36 @@ function playerTurn(){
 
 #FUNCTION TO SIMULATE COMPUTER TURN
 function computerTurn(){
-	#USING TURNPLAYED VARIABLE TO RESTRICT COMPUTER FROM PLAYING ITS TURN MULTIPLE TIMES
-	turnPlayed=0
+	#USING TURNPLAY VARIABLE TO RESTRICT COMPUTER FROM PLAYING ITS TURN MULTIPLE TIMES
+	turnPlay=0
 	if [ $playCount -ge $TOTALCOUNT ]
 	then
 		echo "Match Tie"
 		exit
 	fi
 	#TO CHECK IF WINNING POSSIBLE AND PLAY WINNING MOVE
-	checkIfWinPossibleAndBlockCompetitorFromWinning $computer
+	winOrBlock $computer
 
 	#TO CHECK IF OPPONENT CAN WIN AND BLOCK FROM WINNING
-	if [[ $turnPlayed == 0 ]]
+	if [[ $turnPlay == 0 ]]
 	then
-		checkIfWinPossibleAndBlockCompetitorFromWinning $player
+		winOrBlock $player
 	fi
 
 	#TAKE CENTER IF CORNER NOT AVAILABLE
-	if [[ $turnPlayed == 0 ]]
+	if [[ $turnPlay == 0 ]]
 	then
 		takeCenter
 	fi
 
 	#TAKE CORNER IF WINNING AND BLOCKING NOT POSSIBLE
-	if [[ $turnPlayed == 0 ]]
+	if [[ $turnPlay == 0 ]]
 	then
 		takeAvailableCorner
 	fi
 
 	#FINALLY TAKE ANY SIDE IF CENTER NOT AVAILABLE
-	if [[ $turnPlayed -eq 0 ]]
+	if [[ $turnPlay -eq 0 ]]
 	then
 		local blockNumber=$((RANDOM%9))
 		while [[ $(isEmpty $blockNumber) == false ]]
